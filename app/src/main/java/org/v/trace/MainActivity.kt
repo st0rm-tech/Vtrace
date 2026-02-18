@@ -75,9 +75,10 @@ fun TraceApp(apiService: ApiService) {
         }
     }
 
-    import kotlinx.coroutines.launch
+import kotlinx.coroutines.launch
 
-    Column(modifier = Modifier.padding(16.dp)) {
+@Composable
+fun TraceApp(apiService: ApiService) {
         TextField(
             value = searchNumber,
             onValueChange = { searchNumber = it },
