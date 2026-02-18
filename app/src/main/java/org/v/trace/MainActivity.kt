@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -75,10 +76,7 @@ fun TraceApp(apiService: ApiService) {
         }
     }
 
-import kotlinx.coroutines.launch
-
-@Composable
-fun TraceApp(apiService: ApiService) {
+    Column(modifier = Modifier.padding(16.dp)) {
         TextField(
             value = searchNumber,
             onValueChange = { searchNumber = it },
