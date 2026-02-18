@@ -24,6 +24,14 @@ import org.v.trace.api.TraceData
 import retrofit2.Retrofit
 
 class MainActivity : ComponentActivity() {
+    companion object {
+        init {
+            System.loadLibrary("vtrace")
+        }
+    }
+
+    private external fun getBaseUrl(): String
+
     private val apiService by lazy {
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
@@ -34,7 +42,7 @@ class MainActivity : ComponentActivity() {
 
         val json = Json { ignoreUnknownKeys = true }
         Retrofit.Builder()
-            .baseUrl("https://stormapi.wineclo.com/")
+            .baseUrl(getBaseUrl())
             .client(client)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
