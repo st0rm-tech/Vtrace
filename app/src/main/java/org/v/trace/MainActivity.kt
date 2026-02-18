@@ -3,16 +3,18 @@ package org.v.trace
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -21,6 +23,11 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.v.trace.api.ApiService
 import org.v.trace.api.TraceData
+import org.v.trace.ui.components.IOSButton
+import org.v.trace.ui.components.IOSSearchField
+import org.v.trace.ui.components.ResultCard
+import org.v.trace.ui.theme.Charcoal
+import org.v.trace.ui.theme.DarkColorScheme
 import retrofit2.Retrofit
 
 class MainActivity : ComponentActivity() {
@@ -52,7 +59,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            TraceApp(apiService)
+            MaterialTheme(colorScheme = DarkColorScheme) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = Charcoal
+                ) {
+                    TraceApp(apiService)
+                }
+            }
         }
     }
 }
@@ -75,53 +89,72 @@ fun TraceApp(apiService: ApiService) {
             if (response.success) {
                 resultList = response.data ?: emptyList()
             } else {
-                errorMessage = "API Error: Success failed"
+                errorMessage = "Sonuç bulunamadı."
             }
         } catch (e: Exception) {
-            errorMessage = "Error: ${e.localizedMessage}"
+            errorMessage = "Hata: ${e.localizedMessage}"
         } finally {
             isLoading = false
         }
     }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        TextField(
-            value = searchNumber,
-            onValueChange = { searchNumber = it },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Numara yazın...") },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(onSearch = {
-                scope.launch { performSearch() }
-            }),
-            singleLine = true
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "V-Trace",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            modifier = Modifier.padding(vertical = 32.dp)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        IOSSearchField(
+            value = searchNumber,
+            onValueChange = { searchNumber = it },
+            onSearch = { scope.launch { performSearch() } }
+        )
 
-        if (isLoading) {
-            CircularProgressIndicator()
-        }
+        Spacer(modifier = Modifier.height(12.dp))
+
+        IOSButton(
+            text = "Sorgula",
+            onClick = { scope.launch { performSearch() } },
+            isLoading = isLoading
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         errorMessage?.let {
-            Text(text = it, color = MaterialTheme.colorScheme.error)
+            Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 14.sp)
         }
 
-        LazyColumn {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             items(resultList) { item ->
-                Card(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+                        .padding(bottom = 16.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Ad: ${item.name ?: "N/A"}")
-                        Text("Telefon: ${item.phone ?: "N/A"}")
-                        Text("Adres: ${item.address ?: "N/A"}")
-                        Text("Pasaport: ${item.passport ?: "N/A"}")
-                        Text("Doğum: ${item.birth_info ?: "N/A"}")
-                        Text("SimId: ${item.sim_id ?: "N/A"}")
-                    }
+                    Text(
+                        text = "Sorgu Sonucu",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    ResultCard("Ad Soyad", item.name ?: "N/A")
+                    ResultCard("Telefon", item.phone ?: "N/A")
+                    ResultCard("Adres", item.address ?: "N/A")
+                    ResultCard("Pasaport", item.passport ?: "N/A")
+                    ResultCard("Doğum Bilgisi", item.birth_info ?: "N/A")
+                    ResultCard("Sim ID", item.sim_id ?: "N/A")
                 }
             }
         }
