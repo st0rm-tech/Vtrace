@@ -3,7 +3,6 @@ package org.v.trace
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,9 +22,10 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.v.trace.api.ApiService
 import org.v.trace.api.TraceData
+import org.v.trace.ui.components.GlassCard
 import org.v.trace.ui.components.IOSButton
 import org.v.trace.ui.components.IOSSearchField
-import org.v.trace.ui.components.ResultCard
+import org.v.trace.ui.components.ResultItem
 import org.v.trace.ui.theme.Charcoal
 import org.v.trace.ui.theme.DarkColorScheme
 import retrofit2.Retrofit
@@ -60,10 +60,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme(colorScheme = DarkColorScheme) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Charcoal
-                ) {
+                Surface(modifier = Modifier.fillMaxSize(), color = Charcoal) {
                     TraceApp(apiService)
                 }
             }
@@ -77,7 +74,6 @@ fun TraceApp(apiService: ApiService) {
     var resultList by remember { mutableStateOf<List<TraceData>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-
     val scope = rememberCoroutineScope()
     
     suspend fun performSearch() {
@@ -86,30 +82,29 @@ fun TraceApp(apiService: ApiService) {
         errorMessage = null
         try {
             val response = apiService.getTraceData(searchNumber)
-            if (response.success) {
-                resultList = response.data ?: emptyList()
+            if (response.success && !response.data.isNullOrEmpty()) {
+                resultList = response.data
             } else {
-                errorMessage = "Sonuç bulunamadı."
+                resultList = emptyList()
+                errorMessage = "Veri bulunamadı."
             }
         } catch (e: Exception) {
-            errorMessage = "Hata: ${e.localizedMessage}"
+            errorMessage = "Hata oluştu: ${e.localizedMessage}"
         } finally {
             isLoading = false
         }
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(20.dp),
+        modifier = Modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "V-Trace",
-            fontSize = 32.sp,
+            fontSize = 34.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White,
-            modifier = Modifier.padding(vertical = 32.dp)
+            modifier = Modifier.padding(top = 40.dp, bottom = 40.dp)
         )
 
         IOSSearchField(
@@ -118,7 +113,7 @@ fun TraceApp(apiService: ApiService) {
             onSearch = { scope.launch { performSearch() } }
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         IOSButton(
             text = "Sorgula",
@@ -126,35 +121,36 @@ fun TraceApp(apiService: ApiService) {
             isLoading = isLoading
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         errorMessage?.let {
-            Text(text = it, color = MaterialTheme.colorScheme.error, fontSize = 14.sp)
+            Text(text = it, color = Color.Red, fontSize = 14.sp)
         }
 
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(resultList) { item ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                ) {
-                    Text(
-                        text = "Sorgu Sonucu",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    ResultCard("Ad Soyad", item.name ?: "N/A")
-                    ResultCard("Telefon", item.phone ?: "N/A")
-                    ResultCard("Adres", item.address ?: "N/A")
-                    ResultCard("Pasaport", item.passport ?: "N/A")
-                    ResultCard("Doğum Bilgisi", item.birth_info ?: "N/A")
-                    ResultCard("Sim ID", item.sim_id ?: "N/A")
+                Text(
+                    text = "Arama Sonucu",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                GlassCard {
+                    ResultItem("Ad Soyad", item.name ?: "N/A")
+                    Divider(color = Color(0x1AFFFFFF))
+                    ResultItem("Telefon", item.phone ?: "N/A")
+                    Divider(color = Color(0x1AFFFFFF))
+                    ResultItem("Adres", item.address ?: "N/A")
+                    Divider(color = Color(0x1AFFFFFF))
+                    ResultItem("Pasaport", item.passport ?: "N/A")
+                    Divider(color = Color(0x1AFFFFFF))
+                    ResultItem("Doğum", item.birth_info ?: "N/A")
+                    Divider(color = Color(0x1AFFFFFF))
+                    ResultItem("Sim ID", item.sim_id ?: "N/A")
                 }
             }
         }
