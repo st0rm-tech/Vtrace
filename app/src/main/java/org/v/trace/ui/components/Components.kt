@@ -1,17 +1,27 @@
 package org.v.trace.ui.components
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,13 +44,16 @@ fun IOSSearchField(
             .fillMaxWidth()
             .height(56.dp)
             .clip(RoundedCornerShape(12.dp)),
-        placeholder = { Text("6340XXXX", color = Color.Gray) },
+        placeholder = { Text("Search by number...", color = Color.Gray) },
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
         colors = TextFieldDefaults.colors(
             focusedContainerColor = SurfaceGray,
             unfocusedContainerColor = SurfaceGray,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
-            cursorColor = IOSBlue
+            cursorColor = IOSBlue,
+            focusedTextColor = Color.White,
+            unfocusedTextColor = Color.White
         ),
         keyboardOptions = KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = { onSearch() }),
@@ -75,17 +88,49 @@ fun IOSButton(
 fun ResultItem(
     label: String,
     value: String,
+    icon: ImageVector? = null,
     modifier: Modifier = Modifier
 ) {
+    val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
+
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .clickable {
+                clipboardManager.setText(AnnotatedString(value))
+                Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+            }
             .padding(vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = label, color = Color.Gray, fontSize = 15.sp)
-        Text(text = value, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = IOSBlue,
+                    modifier = Modifier.size(20.dp).padding(end = 8.dp)
+                )
+            }
+            Text(text = label, color = Color.Gray, fontSize = 15.sp)
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = value,
+                color = Color.White,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Icon(
+                imageVector = Icons.Default.ContentCopy,
+                contentDescription = "Copy",
+                tint = Color.Gray.copy(alpha = 0.5f),
+                modifier = Modifier.size(16.dp)
+            )
+        }
     }
 }
 

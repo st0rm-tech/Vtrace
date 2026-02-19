@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -86,10 +88,10 @@ fun TraceApp(apiService: ApiService) {
                 resultList = response.data
             } else {
                 resultList = emptyList()
-                errorMessage = "Veri bulunamadı."
+                errorMessage = "No records found."
             }
         } catch (e: Exception) {
-            errorMessage = "Hata oluştu: ${e.localizedMessage}"
+            errorMessage = "An error occurred: ${e.localizedMessage}"
         } finally {
             isLoading = false
         }
@@ -100,7 +102,7 @@ fun TraceApp(apiService: ApiService) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "V-Trace",
+            text = "Dashboard",
             fontSize = 34.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White,
@@ -116,7 +118,7 @@ fun TraceApp(apiService: ApiService) {
         Spacer(modifier = Modifier.height(16.dp))
 
         IOSButton(
-            text = "Sorgula",
+            text = "Search",
             onClick = { scope.launch { performSearch() } },
             isLoading = isLoading
         )
@@ -133,24 +135,24 @@ fun TraceApp(apiService: ApiService) {
         ) {
             items(resultList) { item ->
                 Text(
-                    text = "Arama Sonucu",
+                    text = "Personal Information",
                     color = Color.White,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 GlassCard {
-                    ResultItem("Ad Soyad", item.name ?: "N/A")
+                    ResultItem("Name", item.name ?: "N/A", Icons.Default.Person)
                     Divider(color = Color(0x1AFFFFFF))
-                    ResultItem("Telefon", item.phone ?: "N/A")
+                    ResultItem("Phone", item.phone ?: "N/A", Icons.Default.Phone)
                     Divider(color = Color(0x1AFFFFFF))
-                    ResultItem("Adres", item.address ?: "N/A")
+                    ResultItem("Address", item.address ?: "N/A", Icons.Default.Home)
                     Divider(color = Color(0x1AFFFFFF))
-                    ResultItem("Pasaport", item.passport ?: "N/A")
+                    ResultItem("Passport", item.passport ?: "N/A", Icons.Default.Badge)
                     Divider(color = Color(0x1AFFFFFF))
-                    ResultItem("Doğum", item.birth_info ?: "N/A")
+                    ResultItem("Birth Info", item.birth_info ?: "N/A", Icons.Default.Cake)
                     Divider(color = Color(0x1AFFFFFF))
-                    ResultItem("Sim ID", item.sim_id ?: "N/A")
+                    ResultItem("Sim ID", item.sim_id ?: "N/A", Icons.Default.SimCard)
                 }
             }
         }
