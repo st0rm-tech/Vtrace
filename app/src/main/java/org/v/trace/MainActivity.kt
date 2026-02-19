@@ -31,6 +31,11 @@ import org.v.trace.ui.components.ResultItem
 import org.v.trace.ui.theme.Charcoal
 import org.v.trace.ui.theme.DarkColorScheme
 import retrofit2.Retrofit
+import org.v.trace.ui.screens.MainScreen
+import org.v.trace.ui.screens.SettingsScreen
+import org.v.trace.ui.theme.IOSBlue
+
+enum class Screen { Main, Settings }
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -62,8 +67,23 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme(colorScheme = DarkColorScheme) {
-                Surface(modifier = Modifier.fillMaxSize(), color = Charcoal) {
-                    TraceApp(apiService)
+                var currentScreen by remember { mutableStateOf(Screen.Main) }
+                
+                Scaffold(
+                    containerColor = Charcoal,
+                    bottomBar = {
+                        VTraceBottomBar(
+                            currentScreen = currentScreen,
+                            onScreenSelected = { currentScreen = it }
+                        )
+                    }
+                ) { innerPadding ->
+                    Box(modifier = Modifier.padding(innerPadding)) {
+                        when (currentScreen) {
+                            Screen.Main -> MainScreen(apiService)
+                            Screen.Settings -> SettingsScreen()
+                        }
+                    }
                 }
             }
         }
@@ -71,90 +91,47 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TraceApp(apiService: ApiService) {
-    var searchNumber by remember { mutableStateOf("") }
-    var resultList by remember { mutableStateOf<List<TraceData>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
-    
-    suspend fun performSearch() {
-        if (searchNumber.isBlank()) return
-        isLoading = true
-        errorMessage = null
-        try {
-            val response = apiService.getTraceData(searchNumber)
-            if (response.success && !response.data.isNullOrEmpty()) {
-                resultList = response.data
-            } else {
-                resultList = emptyList()
-                errorMessage = "No records found."
-            }
-        } catch (e: Exception) {
-            errorMessage = "An error occurred: ${e.localizedMessage}"
-        } finally {
-            isLoading = false
-        }
-    }
-
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+fun VTraceBottomBar(
+    currentScreen: Screen,
+    onScreenSelected: (Screen) -> Unit
+) {
+    NavigationBar(
+        containerColor = Color(0xFF1C1C1E).copy(alpha = 0.8f),
+        tonalElevation = 0.dp,
+        modifier = Modifier.height(84.dp)
     ) {
-        Text(
-            text = "Dashboard",
-            fontSize = 34.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-            modifier = Modifier.padding(top = 40.dp, bottom = 40.dp)
-        )
-
-        IOSSearchField(
-            value = searchNumber,
-            onValueChange = { searchNumber = it },
-            onSearch = { scope.launch { performSearch() } }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        IOSButton(
-            text = "Search",
-            onClick = { scope.launch { performSearch() } },
-            isLoading = isLoading
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        errorMessage?.let {
-            Text(text = it, color = Color.Red, fontSize = 14.sp)
-        }
-
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(resultList) { item ->
-                Text(
-                    text = "Personal Information",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                GlassCard {
-                    ResultItem("Name", item.name ?: "N/A", Icons.Default.Person)
-                    Divider(color = Color(0x1AFFFFFF))
-                    ResultItem("Phone", item.phone ?: "N/A", Icons.Default.Phone)
-                    Divider(color = Color(0x1AFFFFFF))
-                    ResultItem("Address", item.address ?: "N/A", Icons.Default.Home)
-                    Divider(color = Color(0x1AFFFFFF))
-                    ResultItem("Passport", item.passport ?: "N/A", Icons.Default.Badge)
-                    Divider(color = Color(0x1AFFFFFF))
-                    ResultItem("Birth Info", item.birth_info ?: "N/A", Icons.Default.Cake)
-                    Divider(color = Color(0x1AFFFFFF))
-                    ResultItem("Sim ID", item.sim_id ?: "N/A", Icons.Default.SimCard)
+        NavigationBarItem(
+            selected = currentScreen == Screen.Main,
+            onClick = { onScreenSelected(Screen.Main) },
+            icon = { Icon(Icons.Default.Home, contentDescription = null) },
+            label = { 
+                if (currentScreen == Screen.Main) {
+                    Text("Ana ekran", fontWeight = FontWeight.Medium)
                 }
-            }
-        }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = IOSBlue,
+                unselectedIconColor = Color.Gray,
+                selectedTextColor = IOSBlue,
+                indicatorColor = Color.Transparent
+            )
+        )
+        
+        NavigationBarItem(
+            selected = currentScreen == Screen.Settings,
+            onClick = { onScreenSelected(Screen.Settings) },
+            icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+            label = { 
+                if (currentScreen == Screen.Settings) {
+                    Text("Ayarlar", fontWeight = FontWeight.Medium)
+                }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = IOSBlue,
+                unselectedIconColor = Color.Gray,
+                selectedTextColor = IOSBlue,
+                indicatorColor = Color.Transparent
+            )
+        )
     }
 }

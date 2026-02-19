@@ -29,6 +29,45 @@ import org.v.trace.ui.theme.GlassBorder
 import org.v.trace.ui.theme.GlassWhite
 import org.v.trace.ui.theme.IOSBlue
 import org.v.trace.ui.theme.SurfaceGray
+import androidx.compose.ui.graphics.Brush
+
+@Composable
+fun ProfileCard(name: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Color(0xFF1C1C1E), Color(0xFF2C2C2E))
+                )
+            )
+            .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(24.dp))
+            .padding(20.dp)
+    ) {
+        Column {
+            // Mock Photo Placeholder
+            Box(
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(IOSBlue.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.Person, contentDescription = null, tint = IOSBlue, modifier = Modifier.size(32.dp))
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Text(
+                text = name,
+                color = Color.White,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
 
 @Composable
 fun IOSSearchField(
@@ -41,14 +80,12 @@ fun IOSSearchField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier
-            .fillMaxWidth()
-            .height(56.dp)
-            .clip(RoundedCornerShape(12.dp)),
-        placeholder = { Text("Search by number...", color = Color.Gray) },
-        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+            .height(52.dp)
+            .clip(RoundedCornerShape(26.dp)),
+        placeholder = { Text("Numara sorgula...", color = Color.Gray, fontSize = 15.sp) },
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = SurfaceGray,
-            unfocusedContainerColor = SurfaceGray,
+            focusedContainerColor = Color(0xFF1C1C1E),
+            unfocusedContainerColor = Color(0xFF1C1C1E),
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             cursorColor = IOSBlue,
